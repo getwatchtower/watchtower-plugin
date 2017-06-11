@@ -45,6 +45,14 @@ class Watchtower {
 	        <?php do_settings_sections('watchtower'); ?>
 	        <?php submit_button(); ?>
 	      </form>
+
+		  <!-- This is for post testing -->
+
+		  <form action='http://watchtower.dev/post_website'>
+			  <input type="submit" value="Test Fire" />
+		  </form>
+
+
 	  </div>
 	<?php }
 
@@ -56,7 +64,6 @@ class Watchtower {
 	function section_2_callback() {
 
 		echo $this->generate_serialkey();
-
 
 	}
 
