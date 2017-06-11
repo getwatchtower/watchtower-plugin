@@ -8,6 +8,8 @@ Author: David Darke
 Author URI: http://www.atomicsmash.co.uk
 */
 
+global $action, $wpdb;
+
 class Watchtower {
 
 	public function __construct() {
@@ -24,21 +26,13 @@ class Watchtower {
 		return substr($shuffled, 0, $length);
 	}
 
-
-	public function serialkey() {
+	public function generate_serialkey() {
 		return random(5).'-'.random(5).'-'.random(5).'-'.random(5).'-'.random(5);
 	}
-
 
 }
 
 
-
-// echo serialkey();
-
-// die();
-
-global $action, $wpdb;
 
 add_action( 'rest_api_init', function () {
 	register_rest_route( 'watchtower/v1', '/details', array(
@@ -98,18 +92,17 @@ function my_admin_init() {
 	 * http://codex.wordpress.org/Function_Reference/add_settings_section
 	 * add_settings_section( $id, $title, $callback, $page );
 	 * */
-  	add_settings_section( 'section-1', __( 'Section One', 'textdomain' ), 'section_1_callback', 'my-plugin' );
-	add_settings_section( 'section-2', __( 'Section Two', 'textdomain' ), 'section_2_callback', 'my-plugin' );
+  	add_settings_section( 'section-1', __( 'WatchTower API details', 'textdomain' ), 'section_1_callback', 'my-plugin' );
 
 	/*
 	 * http://codex.wordpress.org/Function_Reference/add_settings_field
 	 * add_settings_field( $id, $title, $callback, $page, $section, $args );
 	 * */
-  	add_settings_field( 'field-1-1', __( 'Field One', 'textdomain' ), 'field_1_1_callback', 'my-plugin', 'section-1' );
-	add_settings_field( 'field-1-2', __( 'Field Two', 'textdomain' ), 'field_1_2_callback', 'my-plugin', 'section-1' );
+  	add_settings_field( 'field-1-1', __( 'Your API User Key', 'textdomain' ), 'field_api_user_key_callback', 'my-plugin', 'section-1' );
+	add_settings_field( 'field-1-2', __( 'Your API Auth Key', 'textdomain' ), 'field_api_auth_key_callback', 'my-plugin', 'section-1' );
 
-	add_settings_field( 'field-2-1', __( 'Field One', 'textdomain' ), 'field_2_1_callback', 'my-plugin', 'section-2' );
-	add_settings_field( 'field-2-2', __( 'Field Two', 'textdomain' ), 'field_2_2_callback', 'my-plugin', 'section-2' );
+	// add_settings_field( 'field-2-1', __( 'Field One', 'textdomain' ), 'field_2_1_callback', 'my-plugin', 'section-2' );
+	// add_settings_field( 'field-2-2', __( 'Field Two', 'textdomain' ), 'field_2_2_callback', 'my-plugin', 'section-2' );
 
 }
 /*
@@ -132,18 +125,17 @@ function my_options_page() {
 * directly put the input fields into the sections.
 * */
 function section_1_callback() {
-	_e( 'Some help text regarding Section One goes here.', 'textdomain' );
+	_e( 'Get these details from your WatchTower Account', 'textdomain' );
 }
-function section_2_callback() {
-	_e( 'Some help text regarding Section Two goes here.', 'textdomain' );
-}
+
+
 /*
 * THE FIELDS
 * */
-function field_1_1_callback() {
+function field_api_user_key_callback() {
 
 	$settings = (array) get_option( 'my-plugin-settings' );
-	$field = "field_1_1";
+	$field = "field_api_user_key";
 	if(isset($settings[$field])){
 		$value = esc_attr( $settings[$field] );
 	}else{
@@ -152,10 +144,10 @@ function field_1_1_callback() {
 
 	echo "<input type='text' name='my-plugin-settings[$field]' value='$value' />";
 }
-function field_1_2_callback() {
+function field_api_auth_key_callback() {
 
 	$settings = (array) get_option( 'my-plugin-settings' );
-	$field = "field_1_2";
+	$field = "field_api_auth_key";
 	if(isset($settings[$field])){
 		$value = esc_attr( $settings[$field] );
 	}else{
@@ -164,30 +156,7 @@ function field_1_2_callback() {
 
 	echo "<input type='text' name='my-plugin-settings[$field]' value='$value' />";
 }
-function field_2_1_callback() {
 
-	$settings = (array) get_option( 'my-plugin-settings' );
-	$field = "field_2_1";
-	if(isset($settings[$field])){
-		$value = esc_attr( $settings[$field] );
-	}else{
-		$value = "";
-	}
-
-	echo "<input type='text' name='my-plugin-settings[$field]' value='$value' />";
-}
-function field_2_2_callback() {
-
-	$settings = (array) get_option( 'my-plugin-settings' );
-	$field = "field_2_2";
-	if(isset($settings[$field])){
-		$value = esc_attr( $settings[$field] );
-	}else{
-		$value = "";
-	}
-
-	echo "<input type='text' name='my-plugin-settings[$field]' value='$value' />";
-}
 /*
 * INPUT VALIDATION:
 * */
@@ -195,16 +164,16 @@ function my_settings_validate_and_sanitize( $input ) {
 
 	$settings = (array) get_option( 'my-plugin-settings' );
 
-	if ( $some_condition == $input['field_1_1'] ) {
-		$output['field_1_1'] = $input['field_1_1'];
+	if ( $some_condition == $input['field_api_user_key'] ) {
+		$output['field_api_user_key'] = $input['field_api_user_key'];
 	} else {
-		add_settings_error( 'my-plugin-settings', 'invalid-field_1_1', 'You have entered an invalid value into Field One.' );
+		add_settings_error( 'my-plugin-settings', 'invalid-field_api_user_key', 'You have entered an invalid value into Field One.' );
 	}
 
-	if ( $some_condition == $input['field_1_2'] ) {
-		$output['field_1_2'] = $input['field_1_2'];
+	if ( $some_condition == $input['field_api_auth_key'] ) {
+		$output['field_api_auth_key'] = $input['field_api_auth_key'];
 	} else {
-		add_settings_error( 'my-plugin-settings', 'invalid-field_1_2', 'You have entered an invalid value into Field One.' );
+		add_settings_error( 'my-plugin-settings', 'invalid-field_api_auth_key', 'You have entered an invalid value into Field One.' );
 	}
 
 	// and so on for each field
