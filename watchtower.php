@@ -14,13 +14,8 @@ class Watchtower {
 
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'my_admin_menu') );
-
 		add_action( 'admin_init', array( $this, 'my_admin_init') );
-
-
 	}
-
-
 
 	public function my_admin_menu() {
 		add_options_page( __('WatchTower', 'textdomain' ), __('WatchTower', 'textdomain' ), 'manage_options', 'watchtower', array($this,'watchtower_options_page') );
@@ -28,30 +23,16 @@ class Watchtower {
 
 	function my_admin_init() {
 
-	  /*
-		 * http://codex.wordpress.org/Function_Reference/register_setting
-		 * register_setting( $option_group, $option_name, $sanitize_callback );
-		 * The second argument ($option_name) is the option name. It’s the one we use with functions like get_option() and update_option()
-		 * */
-	  	# With input validation:
-	  	# register_setting( 'my-settings-group', 'watchtower-settings', 'my_settings_validate_and_sanitize' );
 	  	register_setting( 'my-settings-group', 'watchtower-settings' );
 
-	  	/*
-		 * http://codex.wordpress.org/Function_Reference/add_settings_section
-		 * add_settings_section( $id, $title, $callback, $page );
-		 * */
 	  	add_settings_section( 'section-1', __( 'WatchTower API details', 'textdomain' ),  array( $this,'section_1_callback' ), 'watchtower' );
 
-		/*
-		 * http://codex.wordpress.org/Function_Reference/add_settings_field
-		 * add_settings_field( $id, $title, $callback, $page, $section, $args );
-		 * */
-	  	add_settings_field( 'field-1-1', __( 'Your API User Key', 'textdomain' ), array( $this, 'field_api_user_key_callback'), 'watchtower', 'section-1' );
-		add_settings_field( 'field-1-2', __( 'Your API Auth Key', 'textdomain' ), array( $this, 'field_api_auth_key_callback'), 'watchtower', 'section-1' );
 
-		// add_settings_field( 'field-2-1', __( 'Field One', 'textdomain' ), 'field_2_1_callback', 'watchtower', 'section-2' );
-		// add_settings_field( 'field-2-2', __( 'Field Two', 'textdomain' ), 'field_2_2_callback', 'watchtower', 'section-2' );
+	  	add_settings_field( 'field-api-user-key', __( 'WatchTower API User Key', 'textdomain' ), array( $this, 'field_api_user_key_callback'), 'watchtower', 'section-1', array('field-name' => '') );
+
+		add_settings_field( 'field-api-auth-key', __( 'WatchTower API Auth Key', 'textdomain' ), array( $this, 'field_api_auth_key_callback'), 'watchtower', 'section-1', array('field-name' => '') );
+
+		add_settings_section( 'section-2', __( 'Your Website API Key', 'textdomain' ),  array( $this,'section_2_callback' ), 'watchtower' );
 
 	}
 
@@ -72,6 +53,13 @@ class Watchtower {
 		_e( 'Get these details from your WatchTower Account', 'textdomain' );
 	}
 
+	function section_2_callback() {
+
+		echo $this->generate_serialkey();
+
+
+	}
+
 
 	private function random($length, $chars = '') {
 		if (!$chars) {
@@ -83,12 +71,12 @@ class Watchtower {
 	}
 
 	private function generate_serialkey() {
-		return random(5).'-'.random(5).'-'.random(5).'-'.random(5).'-'.random(5);
+		return $this->random(5).'-'.$this->random(5).'-'.$this->random(5).'-'.$this->random(5).'-'.$this->random(5);
 	}
 
 	//ASTODO: These functions need to be merged
 
-	function field_api_user_key_callback() {
+	function field_api_user_key_callback($args= array()) {
 
 		$settings = (array) get_option( 'watchtower-settings' );
 		$field = "field_api_user_key";
@@ -102,7 +90,7 @@ class Watchtower {
 	}
 
 
-	function field_api_auth_key_callback() {
+	function field_api_auth_key_callback($args= array()) {
 
 		$settings = (array) get_option( 'watchtower-settings' );
 		$field = "field_api_auth_key";
