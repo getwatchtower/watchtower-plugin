@@ -13,11 +13,28 @@ global $action, $wpdb;
 class Watchtower {
 
 	public function __construct() {
-
-
+		add_action( 'admin_menu', array( $this, 'my_admin_menu') );
 	}
 
-	public function random($length, $chars = '') {
+	public function my_admin_menu() {
+		add_options_page( __('WatchTower', 'textdomain' ), __('WatchTower', 'textdomain' ), 'manage_options', 'watchtower', array($this,'watchtower_options_page') );
+	}
+
+
+	function watchtower_options_page() {
+	?>
+	  <div class="wrap">
+	      <h2><?php _e('WatchTower', 'textdomain'); ?></h2>
+	      <form action="options.php" method="POST">
+	        <?php settings_fields('my-settings-group'); ?>
+	        <?php do_settings_sections('watchtower'); ?>
+	        <?php submit_button(); ?>
+	      </form>
+	  </div>
+	<?php }
+
+
+	private function random($length, $chars = '') {
 		if (!$chars) {
 			$chars = implode(range('a','f'));
 			$chars .= implode(range('0','9'));
@@ -26,13 +43,13 @@ class Watchtower {
 		return substr($shuffled, 0, $length);
 	}
 
-	public function generate_serialkey() {
+	private function generate_serialkey() {
 		return random(5).'-'.random(5).'-'.random(5).'-'.random(5).'-'.random(5);
 	}
 
 }
 
-
+new Watchtower;
 
 add_action( 'rest_api_init', function () {
 	register_rest_route( 'watchtower/v1', '/details', array(
@@ -68,13 +85,8 @@ function get_details( WP_REST_Request $request ) {
 
 
 
-# http://kovshenin.com/2012/the-wordpress-settings-api/
-# http://codex.wordpress.org/Settings_API
 
-add_action( 'admin_menu', 'my_admin_menu' );
-function my_admin_menu() {
-    add_options_page( __('My Plugin Options', 'textdomain' ), __('My Plugin Options', 'textdomain' ), 'manage_options', 'my-plugin', 'my_options_page' );
-}
+
 add_action( 'admin_init', 'my_admin_init' );
 
 function my_admin_init() {
@@ -85,40 +97,27 @@ function my_admin_init() {
 	 * The second argument ($option_name) is the option name. It’s the one we use with functions like get_option() and update_option()
 	 * */
   	# With input validation:
-  	# register_setting( 'my-settings-group', 'my-plugin-settings', 'my_settings_validate_and_sanitize' );
-  	register_setting( 'my-settings-group', 'my-plugin-settings' );
+  	# register_setting( 'my-settings-group', 'watchtower-settings', 'my_settings_validate_and_sanitize' );
+  	register_setting( 'my-settings-group', 'watchtower-settings' );
 
   	/*
 	 * http://codex.wordpress.org/Function_Reference/add_settings_section
 	 * add_settings_section( $id, $title, $callback, $page );
 	 * */
-  	add_settings_section( 'section-1', __( 'WatchTower API details', 'textdomain' ), 'section_1_callback', 'my-plugin' );
+  	add_settings_section( 'section-1', __( 'WatchTower API details', 'textdomain' ), 'section_1_callback', 'watchtower' );
 
 	/*
 	 * http://codex.wordpress.org/Function_Reference/add_settings_field
 	 * add_settings_field( $id, $title, $callback, $page, $section, $args );
 	 * */
-  	add_settings_field( 'field-1-1', __( 'Your API User Key', 'textdomain' ), 'field_api_user_key_callback', 'my-plugin', 'section-1' );
-	add_settings_field( 'field-1-2', __( 'Your API Auth Key', 'textdomain' ), 'field_api_auth_key_callback', 'my-plugin', 'section-1' );
+  	add_settings_field( 'field-1-1', __( 'Your API User Key', 'textdomain' ), 'field_api_user_key_callback', 'watchtower', 'section-1' );
+	add_settings_field( 'field-1-2', __( 'Your API Auth Key', 'textdomain' ), 'field_api_auth_key_callback', 'watchtower', 'section-1' );
 
-	// add_settings_field( 'field-2-1', __( 'Field One', 'textdomain' ), 'field_2_1_callback', 'my-plugin', 'section-2' );
-	// add_settings_field( 'field-2-2', __( 'Field Two', 'textdomain' ), 'field_2_2_callback', 'my-plugin', 'section-2' );
+	// add_settings_field( 'field-2-1', __( 'Field One', 'textdomain' ), 'field_2_1_callback', 'watchtower', 'section-2' );
+	// add_settings_field( 'field-2-2', __( 'Field Two', 'textdomain' ), 'field_2_2_callback', 'watchtower', 'section-2' );
 
 }
-/*
- * THE ACTUAL PAGE
- * */
-function my_options_page() {
-?>
-  <div class="wrap">
-      <h2><?php _e('My Plugin Options', 'textdomain'); ?></h2>
-      <form action="options.php" method="POST">
-        <?php settings_fields('my-settings-group'); ?>
-        <?php do_settings_sections('my-plugin'); ?>
-        <?php submit_button(); ?>
-      </form>
-  </div>
-<?php }
+
 /*
 * THE SECTIONS
 * Hint: You can omit using add_settings_field() and instead
@@ -129,12 +128,10 @@ function section_1_callback() {
 }
 
 
-/*
-* THE FIELDS
-* */
+
 function field_api_user_key_callback() {
 
-	$settings = (array) get_option( 'my-plugin-settings' );
+	$settings = (array) get_option( 'watchtower-settings' );
 	$field = "field_api_user_key";
 	if(isset($settings[$field])){
 		$value = esc_attr( $settings[$field] );
@@ -142,11 +139,11 @@ function field_api_user_key_callback() {
 		$value = "";
 	}
 
-	echo "<input type='text' name='my-plugin-settings[$field]' value='$value' />";
+	echo "<input type='text' name='watchtower-settings[$field]' value='$value' />";
 }
 function field_api_auth_key_callback() {
 
-	$settings = (array) get_option( 'my-plugin-settings' );
+	$settings = (array) get_option( 'watchtower-settings' );
 	$field = "field_api_auth_key";
 	if(isset($settings[$field])){
 		$value = esc_attr( $settings[$field] );
@@ -154,26 +151,23 @@ function field_api_auth_key_callback() {
 		$value = "";
 	}
 
-	echo "<input type='text' name='my-plugin-settings[$field]' value='$value' />";
+	echo "<input type='text' name='watchtower-settings[$field]' value='$value' />";
 }
 
-/*
-* INPUT VALIDATION:
-* */
 function my_settings_validate_and_sanitize( $input ) {
 
-	$settings = (array) get_option( 'my-plugin-settings' );
+	$settings = (array) get_option( 'watchtower-settings' );
 
 	if ( $some_condition == $input['field_api_user_key'] ) {
 		$output['field_api_user_key'] = $input['field_api_user_key'];
 	} else {
-		add_settings_error( 'my-plugin-settings', 'invalid-field_api_user_key', 'You have entered an invalid value into Field One.' );
+		add_settings_error( 'watchtower-settings', 'invalid-field_api_user_key', 'You have entered an invalid value into Field One.' );
 	}
 
 	if ( $some_condition == $input['field_api_auth_key'] ) {
 		$output['field_api_auth_key'] = $input['field_api_auth_key'];
 	} else {
-		add_settings_error( 'my-plugin-settings', 'invalid-field_api_auth_key', 'You have entered an invalid value into Field One.' );
+		add_settings_error( 'watchtower-settings', 'invalid-field_api_auth_key', 'You have entered an invalid value into Field One.' );
 	}
 
 	// and so on for each field
