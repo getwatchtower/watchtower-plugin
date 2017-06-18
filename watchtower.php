@@ -48,7 +48,11 @@ class Watchtower {
 
 		  <!-- This is for post testing -->
 
-		  <form action='http://watchtower.dev/post_website'>
+		  <form action='http://watchtower.dev/post_website' method='post'>
+			  <input type='text' name='watchtower_user' value='user-key'>
+			  <input type='text' name='watchtower_auth' value='auth-key'>
+			  <input type='text' name='watchtower_site_url' value='http://wordpress.dev'>
+			  <input type='text' name='watchtower_site_name' value='Watch Tower'>
 			  <input type="submit" value="Test Fire" />
 		  </form>
 
