@@ -53,6 +53,7 @@ class Watchtower {
 			  <input type='text' name='watchtower_auth' value='auth-key'>
 			  <input type='text' name='watchtower_site_url' value='http://wordpress.dev'>
 			  <input type='text' name='watchtower_site_name' value='Watch Tower'>
+			  <input type='text' name='watchtower_wp_version' value='111'>
 			  <input type="submit" value="Test Fire" />
 		  </form>
 
