@@ -134,11 +134,34 @@ add_action( 'rest_api_init', function () {
 function get_details( WP_REST_Request $request ) {
 
 	//ASTODO: Add Auth here
+	// Get all active plugins, this return meta details like 'name' and 'author'
+	$all_plugins = get_plugins();
 
-	// wp_get_active_and_valid_plugins()
-    $pluginsUpdates = get_site_transient('update_plugins');
+	// Get all plugins that need updating, the actual array we need is $update_plugins->response
+	// Sadly this array doesn't include the important meta details for the plugin, so we need to append
+	// the update status to $all_plugins
+    $update_plugins = get_site_transient('update_plugins');
 
-    return $pluginsUpdates;
+	// Check count and start looping through updates
+	if( count($update_plugins->response > 0) ){
+		foreach( $update_plugins->response as $plugin ){
+
+			if (array_key_exists($plugin->plugin, $all_plugins)) {
+				// If an update is available add 'update' and 'new_version' to the return feed
+				$all_plugins[$plugin->plugin]['update'] = true;
+				$all_plugins[$plugin->plugin]['new_version'] = $plugin->new_version;
+			};
+			// }else{
+			// 	$all_plugins[$plugin->plugin]['update'] = false;
+			// 	$all_plugins[$plugin->plugin]['new_version'] = null;
+			//
+			// }
+
+		}
+	};
+
+	// Return the newly ammended feed
+    return $all_plugins;
 
 }
 
