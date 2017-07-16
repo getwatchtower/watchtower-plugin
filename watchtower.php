@@ -39,23 +39,27 @@ class Watchtower {
 	function watchtower_options_page() {
 	?>
 	  <div class="wrap">
-	      <h2><?php _e('WatchTower', 'textdomain'); ?></h2>
-	      <form action="options.php" method="POST">
-	        <?php settings_fields('my-settings-group'); ?>
-	        <?php do_settings_sections('watchtower'); ?>
-	        <?php submit_button(); ?>
-	      </form>
+			<h2><?php _e('WatchTower', 'textdomain'); ?></h2>
+			<form action="options.php" method="POST">
+			<?php settings_fields('my-settings-group'); ?>
+			<?php do_settings_sections('watchtower'); ?>
+			<?php submit_button(); ?>
+			</form>
 
-		  <!-- This is for post testing -->
 
-		  <form action='http://watchtower.dev/post_website' method='post'>
-			  <input type='text' name='watchtower_user' value='user-key'>
-			  <input type='text' name='watchtower_auth' value='auth-key'>
-			  <input type='text' name='watchtower_site_url' value='http://wordpress.dev'>
-			  <input type='text' name='watchtower_site_name' value='Watch Tower'>
-			  <input type='text' name='watchtower_wp_version' value='111'>
-			  <input type="submit" value="Test Fire" />
-		  </form>
+
+
+
+			<!-- This is for post testing -->
+			<form action='http://watchtower.dev/post_website' method='post'>
+				<input type='text' name='watchtower_user' value=''>
+				<input type='text' name='watchtower_auth' value=''>
+				<input type='text' name='watchtower_site_url' value='<?php bloginfo('url'); ?>'>
+				<input type='text' name='watchtower_site_name' value='<?php bloginfo('name'); ?>'>
+				<input type='text' name='watchtower_endpoint_url' value='<?php bloginfo('url'); ?>/wp-json/watchtower/v1/details'>
+				<input type="submit" value="Test Fire" />
+			</form>
+
 
 
 	  </div>
@@ -137,14 +141,23 @@ function get_details( WP_REST_Request $request ) {
 	// Get all active plugins, this return meta details like 'name' and 'author'
 	$all_plugins = get_plugins();
 
+	global $wp_version;
+
+
+
 	// Get all plugins that need updating, the actual array we need is $update_plugins->response
 	// Sadly this array doesn't include the important meta details for the plugin, so we need to append
 	// the update status to $all_plugins
     $update_plugins = get_site_transient('update_plugins');
 
+
+
+
 	// Check count and start looping through updates
 	if( count($update_plugins->response > 0) ){
-		foreach( $update_plugins->response as $plugin ){
+		foreach( $update_plugins->response as $key => $plugin ){
+
+
 
 			if (array_key_exists($plugin->plugin, $all_plugins)) {
 				// If an update is available add 'update' and 'new_version' to the return feed
@@ -160,8 +173,12 @@ function get_details( WP_REST_Request $request ) {
 		}
 	};
 
+	$all_details['plugins'] = $all_plugins;
+	$all_details['core'] = $wp_version;
+
+
 	// Return the newly ammended feed
-    return $all_plugins;
+    return $all_details;
 
 }
 
